@@ -12,6 +12,7 @@ export const generateEmbed = async (firstBlockUuid: string) => {
 
   // 初回のみ、ユーザーにメッセージ表示
   if (!logseq.settings!.noticeFirstSetup) {
+    logseq.showSettingsUI()
     logseq.UI.showMsg(
       //初回は、すでにテンプレートが適用されているため、テンプレートの編集後に、All deleteボタンを押して、各ドラフトを更新してください。
       `${t("The first time, the template is already applied, so edit the template and press the All delete button to update each draft.")}`, "info", {
