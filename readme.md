@@ -14,7 +14,7 @@ This plugin does not work with Logseq db version.
 ## Feature
 
 - It can be customized in several sizes and styles to display multiple page content.
-  > ![Randomプラグイン](https://github.com/user-attachments/assets/ea0de8b8-4b77-490e-8b80-56442192ec8f)
+  > ![image](https://github.com/user-attachments/assets/246bc3cb-f2dc-44ad-a8fa-d688d18df3ef)
 
 ---
 
@@ -27,7 +27,7 @@ This plugin does not work with Logseq db version.
 ### Usage
 
 - A new header item is added to the left menu of Logseq. Click on it to access a dedicated plugin page.
-  > ![image](https://github.com/user-attachments/assets/5e263800-73ee-4527-a4c2-8851e0d07e27)
+  > ![image](https://github.com/user-attachments/assets/769446f1-ed88-4c61-8f50-180e5ea49cae)
 
 - On the page, there is a menu in the top right-hand corner. Press the 🎨 button to switch between display styles.
   > It is possible to change the number of pages displayed in the plugin settings.

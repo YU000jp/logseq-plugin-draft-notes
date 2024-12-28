@@ -14,7 +14,7 @@
 ## 機能
 
 - 複数のページコンテンツを表示するために、いくつかのサイズとスタイルでカスタマイズできます。
-  > ![Randomプラグイン](https://github.com/user-attachments/assets/ea0de8b8-4b77-490e-8b80-56442192ec8f)
+  > ![image](https://github.com/user-attachments/assets/2463efad-ff79-45d6-94e4-742a49fec516)
 
 ---
 
@@ -27,7 +27,7 @@
 ### 使用方法
 
 - Logseqの左メニューに新しいヘッダー項目が追加されます。それをクリックして専用のプラグインページにアクセスします。
-  > ![image](https://github.com/user-attachments/assets/5e263800-73ee-4527-a4c2-8851e0d07e27)
+  > ![image](https://github.com/user-attachments/assets/1c591a2c-0abd-482c-8d6c-18ff1b93e547)
 
 - ページには右上隅にメニューがあります。🎨ボタンを押して表示スタイルを切り替えます。
   > プラグイン設定で表示されるページ数を変更可能です。
