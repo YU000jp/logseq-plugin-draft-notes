@@ -46,6 +46,6 @@ This plugin does not work with Logseq db version.
 
 ## Prior art & Credit
 
-Icon > [icooon-mono.com](https://icooon-mono.com/00108-%e3%83%80%e3%83%bc%e3%83%84%e3%81%ae%e7%9f%a2%e3%81%ae%e3%82%a2%e3%82%a4%e3%82%b3%e3%83%b3%e7%b4%a0%e6%9d%90/)
+Icon > [icooon-mono.com](https://icooon-mono.com/12033-%e7%bd%b2%e5%90%8d%e3%82%a2%e3%82%a4%e3%82%b3%e3%83%b3/)
 
 Author > [@YU000jp](https://github.com/YU000jp)
