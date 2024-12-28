@@ -1,8 +1,8 @@
-import '@logseq/libs'; //https://plugins-doc.logseq.com/
+import '@logseq/libs' //https://plugins-doc.logseq.com/
 import { BlockEntity, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
-import { setup as l10nSetup, t } from "logseq-l10n"; //https://github.com/sethyuan/logseq-l10n
-import { generateEmbed, generateEmbedForAssets } from './embed/generateBlock'
-import { addLeftMenuNavHeader, clearEle } from './embed/lib'
+import { setup as l10nSetup, t } from "logseq-l10n" //https://github.com/sethyuan/logseq-l10n
+import { generateEmbed } from './embed/generateBlock'
+import { addLeftMenuNavHeader, clearEle, removeProvideStyle } from './embed/lib'
 import cssMain from './main.css?inline'
 import { handleScrolling } from './scroll'
 import { keySettingsPageStyle, settingsTemplate, styleList } from './settings'
@@ -26,19 +26,22 @@ import uk from "./translations/uk.json"
 import zhCN from "./translations/zh-CN.json"
 import zhHant from "./translations/zh-Hant.json"
 
-export const mainPageTitle = "Multi-Random-Note-Plugin" // メインページのタイトル
+export const mainPageTitle = "Draft-Notes-Plugin" // メインページのタイトル
 export const mainPageTitleLower = mainPageTitle.toLowerCase()
 export const shortKey = "mrn"
 const keyCssMain = "main"
-const keyToolbar = "Multi-Random-Note"
+const keyToolbar = "Draft-Notes"
 const keyPageBarId = `${shortKey}--pagebar`
-const toolbarIcon = "🎯"
+const toolbarIcon = "💻"
 const keyToggleButton = `${shortKey}--changeStyleToggle`
 const keySettingsButton = `${shortKey}--pluginSettings`
 const keyRunButton = `${shortKey}--run`
-const keyAssetsButton = `${shortKey}--assets`
 const keyCloseButton = `${shortKey}--close`
+const keyAllDeleteButton = `${shortKey}--allDelete`
 const keyLeftMenu = `${shortKey}--nav-header`
+const keyCssRemoveDrafts = `${shortKey}--removeDrafts`
+export const templatePageTitle = mainPageTitle + "/Template"
+export const templateName = "draft-notes-plugin"
 
 
 /* main */
@@ -52,7 +55,7 @@ const main = async () => {
   })
 
   /* user settings */
-  logseq.useSettingsSchema(settingsTemplate())
+  logseq.useSettingsSchema(settingsTemplate(t("Draft")))
 
 
   // ツールバーにボタンを追加
@@ -72,9 +75,9 @@ const main = async () => {
       <div id="${keyPageBarId}" title="${mainPageTitle} ${t("plugin")}">
       <button id="${keyToggleButton}" data-on-click="${keyToggleButton}" title="${t("Change Style")}">🎨</button>
       <button id="${keySettingsButton}" data-on-click="${keySettingsButton}" title="${t("Plugin Settings")}">⚙</button>
-      <button id="${keyRunButton}" data-on-click="${keyRunButton}" title="${t("Update page list.")}">◆ ${t("Pages")}</button>
-      <button id="${keyAssetsButton}" data-on-click="${keyAssetsButton}" title="${t("Randomly search for assets.")}">◇ ${t("Assets")}</button>
+      <button id="${keyRunButton}" data-on-click="${keyRunButton}" title="${t("Update page list.")}">◆ ${t("Reload")}</button>
       <button id="${keyCloseButton}" data-on-click="${keyCloseButton}" title="${t("Press this button when finished.")}">✖ ${t("Close")}</button>
+      <button id="${keyAllDeleteButton}" data-on-click="${keyAllDeleteButton}" title="" style="color:red"><small>${t("All delete")}</small></button>
       </div>
       <style>
       #${keyPageBarId} {
@@ -150,16 +153,6 @@ const main = async () => {
       await updateMainContent("page")
     },
 
-    // アセットボタン
-    [keyAssetsButton]: async () => {
-      if (processingButton) return
-      processingButton = true
-      setTimeout(() => processingButton = false, 100)
-
-      // ページ内容の更新をおこなう
-      await updateMainContent("assets")
-    },
-
     // 閉じるボタンが押されたら
     [keyCloseButton]: () => {
       if (processingButton) return
@@ -167,6 +160,17 @@ const main = async () => {
       setTimeout(() => processingButton = false, 100)
 
       logseq.Editor.deletePage(mainPageTitle)
+    },
+
+    // 全削除ボタンが押されたら
+    [keyAllDeleteButton]: async () => {
+      if (processingButton) return
+      processingButton = true
+      setTimeout(() => processingButton = false, 100)
+
+      // ページの全削除
+      for (let i = 1; i <= (logseq.settings!.count as number); i++)
+        await logseq.Editor.deletePage(`${logseq.settings!.draftTitleWord}${i}`)
     },
 
   })
@@ -179,6 +183,8 @@ const main = async () => {
   // CSSを追加
   logseq.provideStyle({ style: cssMain, key: keyCssMain })
 
+  if (logseq.settings!.removeDraftFromRecent as boolean === true)
+    removeDraftsFromRecent()// 左メニューの履歴リストから、各ドラフトを取り除く
 
   // プラグインが有効になったとき
   // document.bodyのクラスを変更する
@@ -205,6 +211,15 @@ const main = async () => {
         addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, keyToolbar, mainPageTitle)
     }
 
+    if (oldSet.removeDraftFromRecent === false && newSet.removeDraftFromRecent === true)
+      removeDraftsFromRecent()
+    else
+      if (oldSet.removeDraftFromRecent === true && newSet.removeDraftFromRecent === false)
+        removeProvideStyle(keyCssRemoveDrafts)
+    // 更新
+    if (oldSet.draftTitleWord !== newSet.draftTitleWord)
+      removeDraftsFromRecent()
+
   })
 
 
@@ -216,37 +231,9 @@ const main = async () => {
   })
 
 
-  // ページメニューコンテキストに、メニューを追加
-  logseq.App.registerPageMenuItem(`${toolbarIcon} ${t("Add to exclusion list of Multi-Random-Note")}`, async () => pageMenuClickAddToExclusionList())
-
-
 }/* end_main */
 
 
-
-// ページメニューコンテキストのメニューがクリックされた時の処理 (ページ名を除外リストに追加)
-const pageMenuClickAddToExclusionList = async () => {
-  {
-    // logseq.settings!.excludesPagesは空か、複数行でページ名が記入されていて、そこに重複しなければページ名を追加する
-    const currentPageEntity = await logseq.Editor.getCurrentPage() as { originalName: PageEntity["originalName"] } | null
-    if (currentPageEntity) {
-      const pageName = currentPageEntity.originalName
-      const excludesPages = logseq.settings!.excludesPages as string
-      if (excludesPages === "") {
-        logseq.updateSettings({ excludesPages: pageName })
-      } else
-        if (excludesPages !== pageName
-          && !excludesPages.split("\n").includes(pageName)) {
-          logseq.updateSettings({ excludesPages: excludesPages + "\n" + pageName })
-          logseq.UI.showMsg(t("Added to exclusion list of Multi-Random-Note."), "success", { timeout: 3000 })
-        }
-        else {
-          console.warn("This page is already included.")
-          logseq.UI.showMsg(t("This page is already included."), "warning", { timeout: 3000 })
-        }
-    }
-  }
-}
 
 
 let now = false
@@ -283,7 +270,7 @@ const handleRouteChange = async (path: string, template: string) => {
 }
 
 
-const updateMainContent = async (type: "page" | "assets") => {
+const updateMainContent = async (type: "page") => {
   const blocks = await logseq.Editor.getCurrentPageBlocksTree() as { uuid: BlockEntity["uuid"] }[]
   if (blocks) {
     // 全てのブロックを削除
@@ -296,12 +283,22 @@ const updateMainContent = async (type: "page" | "assets") => {
     if (newBlockEntity)
       if (type === "page")
         await generateEmbed(newBlockEntity.uuid)
-      else
-        if (type === "assets")
-          await generateEmbedForAssets(newBlockEntity.uuid)
   }
 }
 
+
+// 左メニューの履歴リストから、各ドラフトを取り除く
+const removeDraftsFromRecent = async () => {
+  if (logseq.settings!.draftTitleWord)
+    logseq.provideStyle({
+      style: `
+  #left-sidebar li[title^="${logseq.settings!.draftTitleWord as string}"i] {
+      display: none;
+  }
+    `,
+      key: keyCssRemoveDrafts,
+    })
+}
 
 
 logseq.ready(main).catch(console.error)

@@ -1,107 +1,114 @@
-import { IBatchBlock } from "@logseq/libs/dist/LSPlugin.user"
 import { t } from "logseq-l10n"
-import { keySettingsPageStyle } from "../settings"
-import { isPageExcluded, pageEntityShort } from "./lib"
-import { getPageEntities, getQueryScript } from "./random"
+import { templateName, templatePageTitle } from ".."
+import { BlockEntity, IBatchBlock, PageEntity } from "@logseq/libs/dist/LSPlugin.user"
 
 
-let beforeArray: string[] = []
 export const generateEmbed = async (firstBlockUuid: string) => {
 
-  const pageEntities = await getPageEntities(getQueryScript()) as pageEntityShort[] | null
-  if (pageEntities) {
-    const batch: IBatchBlock[] = []
-    // // 重複を取り除く
-    pageEntities.filter((element, index, self) =>
-      index === self.findIndex((e) => (
-        e["uuid"]
-        && e["uuid"] === element["uuid"] // uuidが一致するものを取り除く
-        && isPageExcluded(e.originalName) === false // 除外リスト
-      )))
+  await logseq.Editor.exitEditingMode()
 
-    for (const pageEntity of (((pageEntities.filter((page) =>
-      beforeArray.includes(page.name) === false // 前回との重複を防ぐ
-    ))
-      .sort(() => 0.5 - Math.random()))// Shuffle the filtered pages
-      .slice(0, (Number(// Take the first `count` elements from the shuffled array
-        logseq.settings![keySettingsPageStyle] === "Tile"
-          ? logseq.settings!.randomStepCountTileOnly as string || 12
-          : logseq.settings!.randomStepCount as string || 6
-      ))))) {
+  logseq.showMainUI({ autoFocus: false })
+  setTimeout(() => logseq.hideMainUI({ restoreEditingCursor: false }), 3000)
 
-      const word = pageEntity.name
-      if (word) {
-        // Insert block for each selected asset
-        batch.push({
-          content: `{{embed [[${word}]]}}`, // embedを使用
-        }) // 処理過負荷防止のためembedのみ使用
-        beforeArray.push(word)
+  // 初回のみ、ユーザーにメッセージ表示
+  if (!logseq.settings!.noticeFirstSetup) {
+    logseq.UI.showMsg(
+      //初回は、すでにテンプレートが適用されているため、テンプレートの編集後に、All deleteボタンを押して、各ドラフトを更新してください。
+      `${t("The first time, the template is already applied, so edit the template and press the All delete button to update each draft.")}`, "info", {
+      timeout: 10000
+    })
+    logseq.updateSettings({ noticeFirstSetup: true }) // 初回セットアップのメッセージを表示しないように設定
+  }
+
+  const count = logseq.settings!.count as number // 設定値を取得
+
+  for (let i = 1; i <= count; i++) {
+
+    const pageTitle = `${logseq.settings!.draftTitleWord as string}${i}`
+    // embed用ブロックを挿入
+    await logseq.Editor.insertBlock(firstBlockUuid, `{{embed [[${pageTitle}]]}}`, { sibling: false, focus: false, })
+
+    // ページが存在するかチェック
+    const pageBlocks = await logseq.Editor.getPageBlocksTree(pageTitle) as BlockEntity[]
+    if (pageBlocks[0]) {
+      if (pageBlocks[0].content === "" && !pageBlocks[1]) {
+        // draft-table-pluginという名称のテンプレートを先頭ブロックに適用
+        if (pageBlocks[0].uuid) {
+          if (await logseq.App.existTemplate(templateName) as boolean)
+            await logseq.App.insertTemplate(pageBlocks[0].uuid, templateName) // テンプレートを適用
+        }
+      }
+    } else {
+      const firstBlock = await logseq.Editor.prependBlockInPage(pageTitle, "") as BlockEntity | null
+      if (firstBlock) {
+        const newLine = await logseq.Editor.insertBlock(firstBlock.uuid, "", { sibling: true, focus: false, }) as BlockEntity | null
+        if (newLine) {
+          if (await logseq.App.existTemplate(templateName) as boolean)
+            await logseq.App.insertTemplate(newLine.uuid, templateName) // テンプレートを適用
+          await logseq.Editor.removeBlock(newLine.uuid)
+        }
       }
     }
-
-    await logseq.Editor.insertBatchBlock(firstBlockUuid, batch, { before: false, sibling: false, })
-
-    // 先頭行
-    await logseq.Editor.updateBlock(firstBlockUuid, t("Page list"))
-
-  } else {
-    logseq.UI.showMsg(t("Maybe something wrong with the query"), "warning", { timeout: 2200 })
-    console.warn("Failed query")
   }
+
+  // メインブロックのタイトル
+  await logseq.Editor.updateBlock(firstBlockUuid, `# ${t("Draft List")}`)
+
+  // テンプレートブロック用のembedを挿入
+  await logseq.Editor.insertBlock(firstBlockUuid, `{{embed [[${templatePageTitle}]]}}`, { sibling: false, focus: false, })
+
+  await firstSetupTemplatePage()
+
   // ブロックの編集モードを終了
   await logseq.Editor.exitEditingMode()
+
+  logseq.hideMainUI({ restoreEditingCursor: false })
 }
 
 
-
-let beforeArrayAssets: string[] = []
-
-export const generateEmbedForAssets = async (firstBlockUuid: string) => {
-
-
-  const assets = await logseq.Assets.listFilesOfCurrentGraph() as {
-    path: string
-    size: number
-    // accessTime: number;
-    // modifiedTime: number;
-    // changeTime: number;
-    // birthTime: number;
-  }[]
-  if (assets) {
-    const batch: IBatchBlock[] = []
-    for (const asset of (((assets.filter(
-      (asset) =>
-        asset.path !== ""
-        && asset.size > 0
-        && beforeArrayAssets.includes((asset.path)) === false // 前回との重複を防ぐ
-      // Filter assets that have a non-empty path and size greater than 0
-    ))
-      .sort(() => 0.5 - Math.random()))// Shuffle the filtered assets
-      .slice(0, (Number(// Take the first `count` elements from the shuffled array
-        logseq.settings![keySettingsPageStyle] === "Tile"
-          ? logseq.settings!.randomStepCountTileOnly as string || 12
-          : logseq.settings!.randomStepCount as string || 6
-      ))))) {
-
-      const word = asset.path.split("\\").pop() // パスを除いたファイル名
-      if (word) {
-        // Insert block for each selected asset
-        batch.push({
-          content: `{{query "${word}"}}`, // クエリーキーワード
-        })
-        beforeArrayAssets.push(asset.path) // パスで記録
-      }
-    }
-
-    await logseq.Editor.insertBatchBlock(firstBlockUuid, batch, { before: false, sibling: false, })
-
-    // Update the first block
-    await logseq.Editor.updateBlock(firstBlockUuid, t("Assets list"))
-
+// 初回のみ、テンプレートページを作成する
+const firstSetupTemplatePage = async () => {
+  const pageBlocks = await logseq.Editor.getPageBlocksTree(templatePageTitle) as BlockEntity[]
+  if (pageBlocks[0]) {
+    if (pageBlocks[0].content === "")
+      await createTemplateBlockBatch(pageBlocks[0].uuid)
   } else {
-    logseq.UI.showMsg(t("No found"), "warning", { timeout: 2200 })
-    console.warn("Failed assets random")
+    const createPage = await logseq.Editor.createPage(templatePageTitle, {}, { redirect: false, createFirstBlock: false, journal: false }) as PageEntity | null
+    if (createPage) {
+      const firstBlock = await logseq.Editor.prependBlockInPage(createPage.uuid, "") as BlockEntity | null
+      if (firstBlock)
+        await createTemplateBlockBatch(firstBlock.uuid)
+    }
   }
-  // ブロックの編集モードを終了
-  await logseq.Editor.exitEditingMode()
+
+}
+
+
+const createTemplateBlockBatch = async (blockUuid: string) => {
+  await logseq.Editor.insertBatchBlock(blockUuid, [
+    // 親ブロック
+    {
+      content: `# ${t("Template for draft")}`,
+      children: [
+        // 子ブロック
+        {
+          content: "",// ここから
+        },
+        {
+          content: "",
+        },
+        {
+          content: "",
+        },
+        {
+          content: "",// ここまで
+        },
+      ],
+      properties: {
+        template: templateName,
+        "template-including-parent": "false",
+      }
+    },
+  ] as Array<IBatchBlock>)
+  await logseq.Editor.removeBlock(blockUuid)
 }

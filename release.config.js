@@ -1,5 +1,5 @@
 
-var PLUGIN_NAME = 'logseq-plugin-multi-random-note'
+var PLUGIN_NAME = 'logseq-plugin-draft-notes'
 
 module.exports = {
     branches: ['main'],
