@@ -227,7 +227,7 @@ const main = async () => {
   logseq.beforeunload(async () => {
     if (logseq.settings![keySettingsPageStyle])
       parent.document.body.classList.remove(`${shortKey}-${logseq.settings![keySettingsPageStyle]}`)
-
+    clearEle(`${shortKey}--nav-header`)
   })
 
 
