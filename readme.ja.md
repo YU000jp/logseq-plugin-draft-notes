@@ -1,4 +1,4 @@
-# Logseqプラグイン: Draft Notes Table 📓
+# Logseqプラグイン: Draft Notes Table 📝
 
 - このプラグインは、埋め込みを使用して下書きページを一括で処理するためのものです。
   - ページタイトルなしで複数のページを作成します。
