@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.0.0...v1.1.0) (2024-12-28)
+
+
+### Bug Fixes
+
+* Set Icon ([abbd255](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/abbd255d865ec28a12d5ed6dfab09b36683e0e28))
+
+
+### Features
+
+* first time, show Settings UI ([362fd40](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/362fd40fab9061b44483c74ec31e42873907906e))
+
 # 1.0.0 (2024-12-28)
 
 
