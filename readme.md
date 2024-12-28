@@ -1,4 +1,4 @@
-# Logseq Plugin: Draft Notes Table 📝
+# Logseq Plugin: Draft Notes (Board) 📝
 
 - This plugin is designed to batch process draft pages using embeds.
   - It creates multiple pages without page titles.
