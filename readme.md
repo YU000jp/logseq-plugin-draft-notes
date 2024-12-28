@@ -16,6 +16,11 @@ This plugin does not work with Logseq db version.
 - It can be customized in several sizes and styles to display multiple page content.
   > ![image](https://github.com/user-attachments/assets/246bc3cb-f2dc-44ad-a8fa-d688d18df3ef)
 
+## Showcase
+
+- As an ideas list.As a draft, duplicate it down the hierarchy as “ideas/”. To remove a draft from the list, go to the appropriate page and change the title.
+  > ![image](https://github.com/user-attachments/assets/717b7c19-a0a1-4ef5-a5ac-d0a1c34cb826)
+
 ---
 
 ## Getting Started

@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.0...v1.1.1) (2024-12-28)
+
+
+### Bug Fixes
+
+* **bug:** remove the menu when plugin-off ([25e9be3](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/25e9be3cf579e6dc45159e1cc36e2052114dd8fe))
+
 # [1.1.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.0.0...v1.1.0) (2024-12-28)
 
 
