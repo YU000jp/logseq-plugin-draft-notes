@@ -16,6 +16,11 @@
 - 複数のページコンテンツを表示するために、いくつかのサイズとスタイルでカスタマイズできます。
   > ![image](https://github.com/user-attachments/assets/2463efad-ff79-45d6-94e4-742a49fec516)
 
+## ショーケース
+
+- アイデアリストとして。下書きとして「アイデア/」のように階層下に複製します。下書きをリストから外すには、該当するページに移動し、タイトルを変更します。
+  > ![image](https://github.com/user-attachments/assets/6d299a2d-6e52-44c3-9a50-06bebe977bbb)
+
 ---
 
 ## はじめに
