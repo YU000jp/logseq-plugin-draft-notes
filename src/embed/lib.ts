@@ -1,3 +1,4 @@
+import { keyCssRemoveDrafts } from '..'
 
 
 export const addLeftMenuNavHeader = (divId: string, icon: string, title: string, goPageName: string) => {
@@ -45,5 +46,17 @@ export const removeProvideStyle = (className: string) => {
     `style[data-injected-style^="${className}"]`
   ) as HTMLStyleElement
   if (doc) doc.remove()
+}
+// 左メニューの履歴リストから、各ドラフトを取り除く
+export const removeDraftsFromRecent = async () => {
+  if (logseq.settings!.draftTitleWord)
+    logseq.provideStyle({
+      style: `
+  #left-sidebar li[title^="${logseq.settings!.draftTitleWord as string}"i] {
+      display: none;
+  }
+    `,
+      key: keyCssRemoveDrafts,
+    })
 }
 

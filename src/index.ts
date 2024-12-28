@@ -1,10 +1,9 @@
 import '@logseq/libs' //https://plugins-doc.logseq.com/
-import { BlockEntity, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
+import { LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 import { setup as l10nSetup, t } from "logseq-l10n" //https://github.com/sethyuan/logseq-l10n
-import { generateEmbed } from './embed/generateBlock'
-import { addLeftMenuNavHeader, clearEle, removeProvideStyle } from './embed/lib'
+import { addLeftMenuNavHeader, clearEle, removeDraftsFromRecent, removeProvideStyle } from './embed/lib'
+import { AddToolbarAndMenuButton, handleRouteChange, updateMainContent } from './handle'
 import cssMain from './main.css?inline'
-import { handleScrolling } from './scroll'
 import { keySettingsPageStyle, settingsTemplate, styleList } from './settings'
 import af from "./translations/af.json"
 import de from "./translations/de.json"
@@ -30,16 +29,16 @@ export const mainPageTitle = "Draft-Notes-Plugin" // メインページのタイ
 export const mainPageTitleLower = mainPageTitle.toLowerCase()
 export const shortKey = "mrn"
 const keyCssMain = "main"
-const keyToolbar = "Draft-Notes"
-const keyPageBarId = `${shortKey}--pagebar`
-const toolbarIcon = "📝"
-const keyToggleButton = `${shortKey}--changeStyleToggle`
-const keySettingsButton = `${shortKey}--pluginSettings`
-const keyRunButton = `${shortKey}--run`
-const keyCloseButton = `${shortKey}--close`
-const keyAllDeleteButton = `${shortKey}--allDelete`
+export const keyToolbar = "Draft-Notes"
+export const keyPageBarId = `${shortKey}--pagebar`
+export const toolbarIcon = "📝"
+export const keyToggleButton = `${shortKey}--changeStyleToggle`
+export const keySettingsButton = `${shortKey}--pluginSettings`
+export const keyRunButton = `${shortKey}--run`
+export const keyCloseButton = `${shortKey}--close`
+export const keyAllDeleteButton = `${shortKey}--allDelete`
 const keyLeftMenu = `${shortKey}--nav-header`
-const keyCssRemoveDrafts = `${shortKey}--removeDrafts`
+export const keyCssRemoveDrafts = `${shortKey}--removeDrafts`
 export const templatePageTitle = mainPageTitle + "/Template"
 export const templateName = "draft-notes-plugin"
 
@@ -58,38 +57,8 @@ const main = async () => {
   logseq.useSettingsSchema(settingsTemplate(t("Draft")))
 
 
-  // ツールバーにボタンを追加
-  logseq.App.registerUIItem('toolbar', {
-    key: keyToolbar,
-    template: `
-    <div>
-      <a class="button icon" data-on-click="${keyToolbar}" style="font-size: 18px" title="${mainPageTitle} ${t("plugin")}">${toolbarIcon}</a>
-    </div>
-    `,
-  })
-
-  // ページバーにボタンを追加
-  logseq.App.registerUIItem('pagebar', {
-    key: keyPageBarId,
-    template: `
-      <div id="${keyPageBarId}" title="${mainPageTitle} ${t("plugin")}">
-      <button id="${keyToggleButton}" data-on-click="${keyToggleButton}" title="${t("Change Style")}">🎨</button>
-      <button id="${keySettingsButton}" data-on-click="${keySettingsButton}" title="${t("Plugin Settings")}">⚙</button>
-      <button id="${keyRunButton}" data-on-click="${keyRunButton}" title="${t("Update page list.")}">◆ ${t("Reload")}</button>
-      <button id="${keyCloseButton}" data-on-click="${keyCloseButton}" title="${t("Press this button when finished.")}">✖ ${t("Close")}</button>
-      <button id="${keyAllDeleteButton}" data-on-click="${keyAllDeleteButton}" title="" style="color:red"><small>${t("All delete")}</small></button>
-      </div>
-      <style>
-      #${keyPageBarId} {
-        display: none;
-      }
-      div.page:has([id="${t(mainPageTitleLower)}"]) #${keyPageBarId} {
-        display: block;
-      }
-      </style>
-      `,
-  })
-
+  // ツールバーとメニュー用のボタンを追加
+  AddToolbarAndMenuButton()
 
 
   // メニューバーのヘッダーに追加
@@ -232,73 +201,6 @@ const main = async () => {
 
 
 }/* end_main */
-
-
-
-
-let now = false
-// ページを開いたとき
-let isProcessingRootChanged = false
-const handleRouteChange = async (path: string, template: string) => {
-  if (template !== "/page/:name" //ページ以外は除外
-    || isProcessingRootChanged) return
-  isProcessingRootChanged = true
-  setTimeout(() => isProcessingRootChanged = false, 100)
-
-  const pageName = path.replace(/^\/page\//, "")
-  if (pageName === mainPageTitle) {
-    now = true
-    await updateMainContent("page")
-    // スクロールを縦ではなく横にする (ホイールイベント)
-    handleScrolling() // Note: 一部スタイルのみで動作させるが、イベントリスナー内で判定している
-  } else
-    if (now = true) {
-      now = false
-      // 必ずHomeに移動してしまうバグがあるためdeletePage()は使えないので、ブロックのみを削除
-      const blockEntities = await logseq.Editor.getPageBlocksTree(mainPageTitle) as BlockEntity[] | null
-      if (blockEntities) {
-        await logseq.Editor.updateBlock(blockEntities[0].uuid, "", {})
-        if (blockEntities[0]) {
-          const children = blockEntities[0].children as BlockEntity[] | undefined
-          if (children)
-            for (const child of children)
-              await logseq.Editor.removeBlock(child.uuid)
-
-        }
-      }
-    }
-}
-
-
-const updateMainContent = async (type: "page") => {
-  const blocks = await logseq.Editor.getCurrentPageBlocksTree() as { uuid: BlockEntity["uuid"] }[]
-  if (blocks) {
-    // 全てのブロックを削除
-    for (const block of blocks)
-      await logseq.Editor.removeBlock(block.uuid)
-
-    // メインページの最初のブロックを作成
-    const newBlockEntity = await logseq.Editor.appendBlockInPage(mainPageTitle, "") as { uuid: BlockEntity["uuid"] } | null
-
-    if (newBlockEntity)
-      if (type === "page")
-        await generateEmbed(newBlockEntity.uuid)
-  }
-}
-
-
-// 左メニューの履歴リストから、各ドラフトを取り除く
-const removeDraftsFromRecent = async () => {
-  if (logseq.settings!.draftTitleWord)
-    logseq.provideStyle({
-      style: `
-  #left-sidebar li[title^="${logseq.settings!.draftTitleWord as string}"i] {
-      display: none;
-  }
-    `,
-      key: keyCssRemoveDrafts,
-    })
-}
 
 
 logseq.ready(main).catch(console.error)
