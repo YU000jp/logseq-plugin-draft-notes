@@ -94,7 +94,7 @@ const main = async () => {
 
   // メニューバーのヘッダーに追加
   if (logseq.settings!.addLeftMenu === true)
-    addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, keyToolbar, mainPageTitle)
+    addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, t("Draft"), mainPageTitle)
 
 
 
@@ -208,7 +208,7 @@ const main = async () => {
       if (newSet.addLeftMenu === false)
         clearEle(`${shortKey}--nav-header`)
       else
-        addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, keyToolbar, mainPageTitle)
+        addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, t("Draft"), mainPageTitle)
     }
 
     if (oldSet.removeDraftFromRecent === false && newSet.removeDraftFromRecent === true)
