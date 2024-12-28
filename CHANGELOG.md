@@ -1,3 +1,10 @@
+# 1.0.0 (2024-12-28)
+
+
+### Features
+
+* Prototype completed. Translation available. ([7cc5cc8](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/7cc5cc8ca62e1a66ffa979558288f43508488acc))
+
 # [1.1.0](https://github.com/YU000jp/logseq-plugin-multi-random-note/compare/v1.0.0...v1.1.0) (2024-12-22)
 
 
