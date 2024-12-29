@@ -7,7 +7,7 @@ body[data-page="page"] {
 
       &>div#root>div>main div#main-content-container div.page {
 
-            & #mrn--pagebar>button {
+            & #drf--pagebar>button {
                   margin-left: 10px;
                   font-size: 20px;
                   color: var(--lx-accent-11, var(--ls-link-text-color, hsl(var(--primary)/.8)))
@@ -112,12 +112,12 @@ body[data-page="page"] {
       }
 
       /* Expansion */
-      &.mrn-Expansion>div#root>div>main div#main-content-container div.page:has([id="draft-notes-plugin"]) h1.page-title::after {
+      &.drf-Expansion>div#root>div>main div#main-content-container div.page:has([id="draft-notes-plugin"]) h1.page-title::after {
             content: "Expansion";
       }
 
       /* Wide */
-      &.mrn-Wide>div#root>div>main div#main-content-container {
+      &.drf-Wide>div#root>div>main div#main-content-container {
 
             /* ページコンテンツ幅を最大化 */
             &>div.cp__sidebar-main-content:has([id="draft-notes-plugin"]) {
@@ -169,7 +169,7 @@ body[data-page="page"] {
       }
 
       /* Gallery */
-      &.mrn-Gallery>div#root>div>main div#main-content-container {
+      &.drf-Gallery>div#root>div>main div#main-content-container {
 
             /* ページコンテンツ幅を最大化 */
             &>div.cp__sidebar-main-content:has([id="draft-notes-plugin"]) {
@@ -230,7 +230,7 @@ body[data-page="page"] {
       }
 
       /* Tile */
-      &.mrn-Tile>div#root>div>main div#main-content-container {
+      &.drf-Tile>div#root>div>main div#main-content-container {
 
             /* ページコンテンツ幅を最大化 */
             &>div.cp__sidebar-main-content:has([id="draft-notes-plugin"]) {

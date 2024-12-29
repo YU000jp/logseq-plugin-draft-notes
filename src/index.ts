@@ -27,7 +27,7 @@ import zhHant from "./translations/zh-Hant.json"
 
 export const mainPageTitle = "Draft-Notes-Plugin" // メインページのタイトル
 export const mainPageTitleLower = mainPageTitle.toLowerCase()
-export const shortKey = "mrn"
+export const shortKey = "drf"
 const keyCssMain = "main"
 export const keyToolbar = "Draft-Notes"
 export const keyPageBarId = `${shortKey}--pagebar`
