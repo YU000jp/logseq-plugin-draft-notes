@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.1...v1.1.2) (2024-12-28)
+
+
+### Bug Fixes
+
+* refactor ([f066e23](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/f066e23344c03e24429f39b89e288269e316a826))
+
 ## [1.1.1](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.0...v1.1.1) (2024-12-28)
 
 
