@@ -1,4 +1,4 @@
-import { mainPageTitleLower, shortKey } from "."
+import { currentGraphName, mainPageTitleLower, shortKey } from "."
 import { keySettingsPageStyle } from './settings'
 
 
@@ -20,7 +20,7 @@ const eventListener = (scrollTargetElement: HTMLElement, ev: WheelEvent) => {
   // "body.${shortKey}-Wide"というクラスがある場合のみ処理
   if (
     parent.document.body.classList.contains(`${shortKey}-Wide`)
-    && logseq.settings![keySettingsPageStyle] === "Wide"
+    && logseq.settings![currentGraphName + keySettingsPageStyle] === "Wide"
     && parent.document.getElementById(mainPageTitleLower) as Node) {
 
     //console.log("activeElement", parent.document.activeElement?.classList)

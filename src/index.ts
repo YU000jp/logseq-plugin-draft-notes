@@ -1,5 +1,5 @@
 import '@logseq/libs' //https://plugins-doc.logseq.com/
-import { LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
+import { AppGraphInfo, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 import { setup as l10nSetup, t } from "logseq-l10n" //https://github.com/sethyuan/logseq-l10n
 import { addLeftMenuNavHeader, clearEle, removeDraftsFromRecent, removeProvideStyle } from './embed/lib'
 import { AddToolbarAndMenuButton, handleRouteChange, updateMainContent } from './handle'
@@ -42,6 +42,30 @@ export const keyCssRemoveDrafts = `${shortKey}--removeDrafts`
 export const templatePageTitle = mainPageTitle + "/Template"
 export const templateName = "draft-notes-plugin"
 
+export let currentGraphName = "" // 現在のgraph名を保持する
+
+export const getCurrentGraph = async (): Promise<string> => {
+  const userGraph = await logseq.App.getCurrentGraph() as { name: AppGraphInfo["name"] } | null
+  if (userGraph) {
+    console.log("currentGraph", userGraph.name)
+    currentGraphName = userGraph.name + "/" // 現在のgraph名を保持
+    return currentGraphName
+  } else {
+    currentGraphName = "" // demo graphの場合は空文字
+    console.warn("getCurrentGraph failed or the demo graph")
+    return ""
+  }
+}
+
+const loadByGraph = async () => {
+  const currentGraphName = await getCurrentGraph()
+  if (currentGraphName === "")
+    return // demo graphの場合は実行しない
+  else {
+    logseq.useSettingsSchema(settingsTemplate(currentGraphName, t("Draft")))
+  }
+}
+
 
 /* main */
 const main = async () => {
@@ -54,7 +78,14 @@ const main = async () => {
   })
 
   /* user settings */
-  logseq.useSettingsSchema(settingsTemplate(t("Draft")))
+
+  // graph変更時の処理
+  logseq.App.onCurrentGraphChanged(async () => {
+    await loadByGraph()
+  })
+
+  // 初回読み込み
+  await loadByGraph()
 
 
   // ツールバーとメニュー用のボタンを追加
@@ -62,7 +93,7 @@ const main = async () => {
 
 
   // メニューバーのヘッダーに追加
-  if (logseq.settings!.addLeftMenu === true)
+  if (logseq.settings![currentGraphName + "addLeftMenu"] === true)
     addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, t("Draft"), mainPageTitle)
 
 
@@ -99,7 +130,7 @@ const main = async () => {
 
       // スタイルを順番に切り替える
       logseq.updateSettings({
-        [keySettingsPageStyle]: styleList[(styleList.indexOf(logseq.settings![keySettingsPageStyle] as string) + 1) % styleList.length]
+        [currentGraphName + keySettingsPageStyle]: styleList[(styleList.indexOf(logseq.settings![currentGraphName + keySettingsPageStyle] as string) + 1) % styleList.length]
       })
     },
 
@@ -138,8 +169,8 @@ const main = async () => {
       setTimeout(() => processingButton = false, 100)
 
       // ページの全削除
-      for (let i = 1; i <= (logseq.settings!.count as number); i++)
-        await logseq.Editor.deletePage(`${logseq.settings!.draftTitleWord}${i}`)
+      for (let i = 1; i <= (logseq.settings![currentGraphName + "count"] as number); i++)
+        await logseq.Editor.deletePage(`${logseq.settings![currentGraphName + "draftTitleWord"]}${i}`)
     },
 
   })
@@ -152,41 +183,41 @@ const main = async () => {
   // CSSを追加
   logseq.provideStyle({ style: cssMain, key: keyCssMain })
 
-  if (logseq.settings!.removeDraftFromRecent as boolean === true)
+  if (logseq.settings![currentGraphName + "removeDraftFromRecent"] as boolean === true)
     removeDraftsFromRecent()// 左メニューの履歴リストから、各ドラフトを取り除く
 
   // プラグインが有効になったとき
   // document.bodyのクラスを変更する
-  if (logseq.settings![keySettingsPageStyle])
-    parent.document.body.classList.add(`${shortKey}-${logseq.settings![keySettingsPageStyle]}`)
+  if (logseq.settings![currentGraphName + keySettingsPageStyle])
+    parent.document.body.classList.add(`${shortKey}-${logseq.settings![currentGraphName + keySettingsPageStyle]}`)
 
 
   // プラグイン設定変更時
   logseq.onSettingsChanged(async (newSet: LSPluginBaseInfo['settings'], oldSet: LSPluginBaseInfo['settings']) => {
 
     // スタイル変更時の処理
-    if (newSet[keySettingsPageStyle] !== oldSet[keySettingsPageStyle]) {
+    if (newSet[currentGraphName + keySettingsPageStyle] !== oldSet[currentGraphName + keySettingsPageStyle]) {
       //document.bodyのクラスを変更する
-      if (oldSet[keySettingsPageStyle])
-        parent.document.body.classList.remove(`${shortKey}-${oldSet[keySettingsPageStyle]}`)
-      if (newSet[keySettingsPageStyle])
-        parent.document.body.classList.add(`${shortKey}-${newSet[keySettingsPageStyle]}`)
+      if (oldSet[currentGraphName + keySettingsPageStyle])
+        parent.document.body.classList.remove(`${shortKey}-${oldSet[currentGraphName + keySettingsPageStyle]}`)
+      if (newSet[currentGraphName + keySettingsPageStyle])
+        parent.document.body.classList.add(`${shortKey}-${newSet[currentGraphName + keySettingsPageStyle]}`)
     }
 
-    if (oldSet.addLeftMenu !== newSet.addLeftMenu) {
-      if (newSet.addLeftMenu === false)
+    if (oldSet[currentGraphName + "addLeftMenu"] !== newSet[currentGraphName + "addLeftMenu"]) {
+      if (newSet[currentGraphName + "addLeftMenu"] === false)
         clearEle(`${shortKey}--nav-header`)
       else
         addLeftMenuNavHeader(keyLeftMenu, toolbarIcon, t("Draft"), mainPageTitle)
     }
 
-    if (oldSet.removeDraftFromRecent === false && newSet.removeDraftFromRecent === true)
+    if (oldSet[currentGraphName + "removeDraftFromRecent"] === false && newSet[currentGraphName + "removeDraftFromRecent"] === true)
       removeDraftsFromRecent()
     else
-      if (oldSet.removeDraftFromRecent === true && newSet.removeDraftFromRecent === false)
+      if (oldSet[currentGraphName + "removeDraftFromRecent"] === true && newSet[currentGraphName + "removeDraftFromRecent"] === false)
         removeProvideStyle(keyCssRemoveDrafts)
     // 更新
-    if (oldSet.draftTitleWord !== newSet.draftTitleWord)
+    if (oldSet[currentGraphName + "draftTitleWord"] !== newSet[currentGraphName + "draftTitleWord"])
       removeDraftsFromRecent()
 
   })
@@ -194,8 +225,8 @@ const main = async () => {
 
   // プラグインが無効になったとき
   logseq.beforeunload(async () => {
-    if (logseq.settings![keySettingsPageStyle])
-      parent.document.body.classList.remove(`${shortKey}-${logseq.settings![keySettingsPageStyle]}`)
+    if (logseq.settings![currentGraphName + keySettingsPageStyle])
+      parent.document.body.classList.remove(`${shortKey}-${logseq.settings![currentGraphName + keySettingsPageStyle]}`)
     clearEle(`${shortKey}--nav-header`)
   })
 

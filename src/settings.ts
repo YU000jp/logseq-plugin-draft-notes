@@ -10,7 +10,7 @@ export const styleList = [
 
 /* user setting */
 // https://logseq.github.io/plugins/types/SettingSchemaDesc.html
-export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] => [
+export const settingsTemplate = (currentGraphName: string, draftTitleWord: string): SettingSchemaDesc[] => [
     { // 使い方のヘルプ
         key: "help",
         type: "heading",
@@ -36,7 +36,7 @@ export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] =>
         default: null,
     },
     { // メインページのスタイル
-        key: keySettingsPageStyle,
+        key: currentGraphName + keySettingsPageStyle,
         title: t("Page style"),
         type: "enum",
         enumChoices: styleList,
@@ -54,7 +54,7 @@ export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] =>
         `,
     },
     {
-        key: "count",
+        key: currentGraphName + "count",
         // 表示するembedの数
         title: t("Number of embed to display"),
         type: "enum",
@@ -66,7 +66,7 @@ export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] =>
         description: t("The number of embeds to display. Before reducing this number, change the title of the drafts you need."),
     },
     {
-        key: "addLeftMenu",
+        key: currentGraphName + "addLeftMenu",
         type: "boolean",
         default: true,
         // 左メニューバーにボタンを追加して、このプラグインにアクセスできるようにします。
@@ -75,7 +75,7 @@ export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] =>
         description: t("Or from the toolbar"),
     },
     {
-        key: "removeDraftFromRecent",
+        key: currentGraphName + "removeDraftFromRecent",
         type: "boolean",
         default: true,
         // 左メニューの履歴リストから各ドラフトを取り除く
@@ -84,7 +84,7 @@ export const settingsTemplate = (draftTitleWord: string): SettingSchemaDesc[] =>
         description: t("Enable / Disable"),
     },
     {
-        key: "draftTitleWord",
+        key: currentGraphName + "draftTitleWord",
         // ドラフトタイトルの単語
         title: t("Draft title word"),
         type: "string",

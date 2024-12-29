@@ -1,5 +1,5 @@
 import { t } from "logseq-l10n"
-import { templateName, templatePageTitle } from ".."
+import { currentGraphName, templateName, templatePageTitle } from ".."
 import { BlockEntity, IBatchBlock, PageEntity } from "@logseq/libs/dist/LSPlugin.user"
 
 
@@ -21,11 +21,11 @@ export const generateEmbed = async (firstBlockUuid: string) => {
     logseq.updateSettings({ noticeFirstSetup: true }) // 初回セットアップのメッセージを表示しないように設定
   }
 
-  const count = logseq.settings!.count as number // 設定値を取得
+  const count = logseq.settings![currentGraphName + "count"] as number // 設定値を取得
 
   for (let i = 1; i <= count; i++) {
 
-    const pageTitle = `${logseq.settings!.draftTitleWord as string}${i}`
+    const pageTitle = `${logseq.settings![currentGraphName + "draftTitleWord"] as string}${i}`
     // embed用ブロックを挿入
     await logseq.Editor.insertBlock(firstBlockUuid, `{{embed [[${pageTitle}]]}}`, { sibling: false, focus: false, })
 
