@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.2...v1.2.0) (2024-12-29)
+
+
+### Features
+
+* **Add:** supports each graph (config) ([a219bfa](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/a219bfa4c6ef8eac68068174063fa536c7e19101))
+
 ## [1.1.2](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.1...v1.1.2) (2024-12-28)
 
 
