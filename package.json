@@ -6,7 +6,7 @@
     "license": "MIT",
     "logseq": {
         "id": "logseq-plugin-draft-notes",
-        "title": "Draft Notes (Board)",
+        "title": "Draft Notes",
         "icon": "./icon.svg",
         "main": "./dist/index.html"
     },
