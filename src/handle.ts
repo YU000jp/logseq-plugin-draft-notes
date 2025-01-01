@@ -1,6 +1,5 @@
 import { BlockEntity } from '@logseq/libs/dist/LSPlugin.user'
 import { keyAllDeleteButton, keyCloseButton, keyPageBarId, keyRunButton, keySettingsButton, keyToggleButton, keyToolbar, mainPageTitle, mainPageTitleLower, toolbarIcon } from '.'
-import { handleScrolling } from './scroll'
 import { generateEmbed } from './embed/generateBlock'
 import { t } from 'logseq-l10n'
 
@@ -18,8 +17,6 @@ export const handleRouteChange = async (path: string, template: string) => {
   if (pageName === mainPageTitle) {
     now = true
     await updateMainContent("page")
-    // スクロールを縦ではなく横にする (ホイールイベント)
-    handleScrolling() // Note: 一部スタイルのみで動作させるが、イベントリスナー内で判定している
   } else
     if (now = true) {
       now = false
