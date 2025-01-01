@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.2.0...v1.2.1) (2025-01-01)
+
+
+### Bug Fixes
+
+* **refactor:** remove scroll handle ([48e82ef](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/48e82efba834e98dd3cee6db134dd71c1b0ded78))
+
 # [1.2.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.1.2...v1.2.0) (2024-12-29)
 
 
