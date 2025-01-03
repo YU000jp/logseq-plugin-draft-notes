@@ -28,7 +28,7 @@
 ### Logseqマーケットプレイスからインストール
 
 - 右上のツールバーの[`---`]を押して[`プラグイン`]を開きます。マーケットプレイスを選択します。検索フィールドに`Draft`と入力し、検索結果から選択してインストールします。
-  > ![image](https://github.com/user-attachments/assets/d2a3eab3-15ca-4e5c-8b25-cf3e443466f8)
+  > ![image](https://github.com/user-attachments/assets/1ae696f1-091c-4d8d-8f66-b94830e89dc6)
 
 ### 使用方法
 
