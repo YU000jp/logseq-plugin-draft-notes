@@ -28,6 +28,7 @@ This plugin does not work with Logseq db version.
 ### Install from Logseq Marketplace
 
 - Press [`---`] on the top right toolbar to open [`Plugins`]. Select marketplace. Type `Draft` in the search field, select it from the search results and install
+  > ![image](https://github.com/user-attachments/assets/e6aa52a4-9351-43df-9dc5-d3116f76c619)
 
 ### Usage
 
