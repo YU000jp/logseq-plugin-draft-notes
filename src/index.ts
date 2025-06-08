@@ -5,6 +5,7 @@ import { addLeftMenuNavHeader, clearEle, removeDraftsFromRecent, removeProvideSt
 import { AddToolbarAndMenuButton, handleRouteChange, updateMainContent } from './handle'
 import cssMain from './main.css?inline'
 import cssMainDb from './mainDb.css?inline'
+import swal from 'sweetalert' //https://sweetalert.js.org/guides/
 import { keySettingsPageStyle, settingsTemplate, styleList } from './settings'
 import af from "./translations/af.json"
 import de from "./translations/de.json"
@@ -204,9 +205,32 @@ const main = async () => {
       processingButton = true
       setTimeout(() => processingButton = false, 100)
 
-      // ページの全削除
-      for (let i = 1; i <= (logseq.settings![currentGraphName + "count"] as number); i++)
-        await logseq.Editor.deletePage(`${logseq.settings![currentGraphName + "draftTitleWord"]}${i}`)
+      //dialog
+      await logseq.showMainUI()
+      await swal({
+        title: "Delete all current drafts?",
+        buttons: {
+          cancel: true,
+          confirm: true,
+        },
+      })
+        .then(async (answer) => {
+          if (answer) { //OK
+            // ページの全削除
+            for (let i = 1; i <= (logseq.settings![currentGraphName + "count"] as number); i++)
+              await logseq.Editor.deletePage(`${logseq.settings![currentGraphName + "draftTitleWord"]}${i}`)
+            setTimeout(() => {
+              // ページ内容の更新をおこなう
+              updateMainContent("page")
+            }, 1000) // 2秒待つ
+          } else {
+            //キャンセル
+            logseq.UI.showMsg("Canceled", "info", { timeout: 2000 })
+          }
+        })
+      logseq.hideMainUI()
+
+
     },
 
   })
