@@ -4,7 +4,7 @@
   - It creates multiple pages without page titles.
 
 > [!NOTE]
-This plugin works in Logseq db model. (md graph only)
+This plugin works in Logseq db model. (file-based graph only)
 
 <div align="right">
 
