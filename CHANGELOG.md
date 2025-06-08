@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.2.1...v1.3.0) (2025-06-08)
+
+
+### Features
+
+* Add confirm for delete ([47a6387](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/47a6387ae047ded4cafc0f59984155e0fa6c8303))
+* Compatibility for DB model (file-based graph only) [#11](https://github.com/YU000jp/logseq-plugin-draft-notes/issues/11) ([b7c9a23](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/b7c9a2346b9d9f06637ee521a6a860a49d2847c6))
+
 ## [1.2.1](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.2.0...v1.2.1) (2025-01-01)
 
 
