@@ -1,9 +1,10 @@
 import '@logseq/libs' //https://plugins-doc.logseq.com/
-import { AppGraphInfo, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
+import { AppGraphInfo, AppInfo, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 import { setup as l10nSetup, t } from "logseq-l10n" //https://github.com/sethyuan/logseq-l10n
 import { addLeftMenuNavHeader, clearEle, removeDraftsFromRecent, removeProvideStyle } from './embed/lib'
 import { AddToolbarAndMenuButton, handleRouteChange, updateMainContent } from './handle'
 import cssMain from './main.css?inline'
+import cssMainDb from './mainDb.css?inline'
 import { keySettingsPageStyle, settingsTemplate, styleList } from './settings'
 import af from "./translations/af.json"
 import de from "./translations/de.json"
@@ -67,8 +68,43 @@ const loadByGraph = async () => {
 }
 
 
+let logseqVersion: string = "" //バージョンチェック用
+let logseqVersionMd: boolean = false //バージョンチェック用
+let logseqDbGraph: boolean = false
+// export const getLogseqVersion = () => logseqVersion //バージョンチェック用
+export const booleanLogseqVersionMd = () => logseqVersionMd //バージョンチェック用
+export const booleanDbGraph = () => logseqDbGraph //バージョンチェック用
+
 /* main */
 const main = async () => {
+  // バージョンチェック
+  logseqVersionMd = await checkLogseqVersion()
+  // console.log("logseq version: ", logseqVersion)
+  // console.log("logseq version is MD model: ", logseqVersionMd)
+  // 100ms待つ
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // if (logseqVersionMd === false) {
+  //   // Logseq ver 0.10.*以下にしか対応していない
+  //   logseq.UI.showMsg("The ’Bullet Point Custom Icon’ plugin only supports Logseq ver 0.10.* and below.", "warning", { timeout: 5000 })
+  //   return
+  // }
+  // // DBグラフチェック
+  logseqDbGraph = await checkLogseqDbGraph()
+  if (logseqDbGraph === true) {
+    // DBグラフには対応していない
+    return showDbGraphIncompatibilityMsg()
+  }
+
+  //100ms待つ
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  logseq.App.onCurrentGraphChanged(async () => {
+    logseqDbGraph = await checkLogseqDbGraph()
+    if (logseqDbGraph === true)
+      // DBグラフには対応していない
+      return showDbGraphIncompatibilityMsg()
+  })
 
   // l10nのセットアップ
   await l10nSetup({
@@ -181,7 +217,7 @@ const main = async () => {
 
 
   // CSSを追加
-  logseq.provideStyle({ style: cssMain, key: keyCssMain })
+  logseq.provideStyle({ style: logseqVersionMd === true ? cssMain : cssMainDb, key: keyCssMain })
 
   if (logseq.settings![currentGraphName + "removeDraftFromRecent"] as boolean === true)
     removeDraftsFromRecent()// 左メニューの履歴リストから、各ドラフトを取り除く
@@ -233,5 +269,44 @@ const main = async () => {
 
 }/* end_main */
 
+
+// MDモデルかどうかのチェック DBモデルはfalse
+const checkLogseqVersion = async (): Promise<boolean> => {
+  const logseqInfo = (await logseq.App.getInfo("version")) as AppInfo | any
+  //  0.11.0もしくは0.11.0-alpha+nightly.20250427のような形式なので、先頭の3つの数値(1桁、2桁、2桁)を正規表現で取得する
+  const version = logseqInfo.match(/(\d+)\.(\d+)\.(\d+)/)
+  if (version) {
+    logseqVersion = version[0] //バージョンを取得
+    // console.log("logseq version: ", logseqVersion)
+
+    // もし バージョンが0.10.*系やそれ以下ならば、logseqVersionMdをtrueにする
+    if (logseqVersion.match(/0\.([0-9]|10)\.\d+/)) {
+      logseqVersionMd = true
+      // console.log("logseq version is 0.10.* or lower")
+      return true
+    } else logseqVersionMd = false
+  } else logseqVersion = "0.0.0"
+  return false
+}
+// DBグラフかどうかのチェック
+// DBグラフかどうかのチェック DBグラフだけtrue
+const checkLogseqDbGraph = async (): Promise<boolean> => {
+  const element = parent.document.querySelector(
+    "div.block-tags",
+  ) as HTMLDivElement | null // ページ内にClassタグが存在する  WARN:: ※DOM変更の可能性に注意
+  if (element) {
+    logseqDbGraph = true
+    return true
+  } else logseqDbGraph = false
+  return false
+}
+
+const showDbGraphIncompatibilityMsg = () => {
+  setTimeout(() => {
+    logseq.UI.showMsg("The ’DONE task property’ plugin not supports Logseq DB graph.", "warning", { timeout: 5000 })
+  }, 2000)
+  clearEle(`${shortKey}--nav-header`)
+  return
+}
 
 logseq.ready(main).catch(console.error)
