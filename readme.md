@@ -3,8 +3,8 @@
 - This plugin is designed to batch process draft pages using embeds.
   - It creates multiple pages without page titles.
 
-> [!WARNING]
-This plugin does not work with Logseq db version.
+> [!NOTE]
+This plugin works in Logseq db model. (md graph only)
 
 <div align="right">
 
