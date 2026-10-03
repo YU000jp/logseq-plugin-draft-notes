@@ -1,5 +1,5 @@
 import '@logseq/libs' //https://plugins-doc.logseq.com/
-import { AppGraphInfo, AppInfo, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
+import { AppGraphInfo, LSPluginBaseInfo, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 import { setup as l10nSetup, t } from "logseq-l10n" //https://github.com/sethyuan/logseq-l10n
 import { addLeftMenuNavHeader, clearEle, removeDraftsFromRecent, removeProvideStyle } from './embed/lib'
 import { AddToolbarAndMenuButton, handleRouteChange, updateMainContent } from './handle'
@@ -70,26 +70,22 @@ const loadByGraph = async () => {
 
 
 let logseqVersion: string = "" //バージョンチェック用
-let logseqVersionMd: boolean = false //バージョンチェック用
+let logseqAppDbEra: boolean = false //アプリ世代(新UI系)判定用
 let logseqDbGraph: boolean = false
 // export const getLogseqVersion = () => logseqVersion //バージョンチェック用
-export const booleanLogseqVersionMd = () => logseqVersionMd //バージョンチェック用
-export const booleanDbGraph = () => logseqDbGraph //バージョンチェック用
+export const booleanAppDbEra = () => logseqAppDbEra //アプリ世代(新UI系)判定用
+export const booleanDbGraph = () => logseqDbGraph //グラフ種別判定用
 
 /* main */
 const main = async () => {
-  // バージョンチェック
-  logseqVersionMd = await checkLogseqVersion()
+  // アプリ情報の取得(アプリ世代はバージョン解析でのみ判定。グラフ種別の判定には使わない)
+  const appInfo = await fetchAppInfo()
+  logseqVersion = appInfo.version
+  logseqAppDbEra = appInfo.isDbEra
   // console.log("logseq version: ", logseqVersion)
-  // console.log("logseq version is MD model: ", logseqVersionMd)
   // 100ms待つ
   await new Promise(resolve => setTimeout(resolve, 100))
 
-  // if (logseqVersionMd === false) {
-  //   // Logseq ver 0.10.*以下にしか対応していない
-  //   logseq.UI.showMsg("The ’Bullet Point Custom Icon’ plugin only supports Logseq ver 0.10.* and below.", "warning", { timeout: 5000 })
-  //   return
-  // }
   // // DBグラフチェック
   logseqDbGraph = await checkLogseqDbGraph()
   if (logseqDbGraph === true) {
@@ -240,8 +236,8 @@ const main = async () => {
   // logseq.App.onPageHeadActionsSlotted(async () => handleRouteChange())//Logseqのバグあり。動作保証が必要
 
 
-  // CSSを追加
-  logseq.provideStyle({ style: logseqVersionMd === true ? cssMain : cssMainDb, key: keyCssMain })
+  // CSSを追加(DOM構造が新旧で異なるためアプリ世代で切り替える)
+  logseq.provideStyle({ style: logseqAppDbEra === false ? cssMain : cssMainDb, key: keyCssMain })
 
   if (logseq.settings![currentGraphName + "removeDraftFromRecent"] as boolean === true)
     removeDraftsFromRecent()// 左メニューの履歴リストから、各ドラフトを取り除く
@@ -294,40 +290,29 @@ const main = async () => {
 }/* end_main */
 
 
-// MDモデルかどうかのチェック DBモデルはfalse
-const checkLogseqVersion = async (): Promise<boolean> => {
-  const logseqInfo = (await logseq.App.getInfo("version")) as AppInfo | any
-  //  0.11.0もしくは0.11.0-alpha+nightly.20250427のような形式なので、先頭の3つの数値(1桁、2桁、2桁)を正規表現で取得する
-  const version = logseqInfo.match(/(\d+)\.(\d+)\.(\d+)/)
-  if (version) {
-    logseqVersion = version[0] //バージョンを取得
-    // console.log("logseq version: ", logseqVersion)
-
-    // もし バージョンが0.10.*系やそれ以下ならば、logseqVersionMdをtrueにする
-    if (logseqVersion.match(/0\.([0-9]|10)\.\d+/)) {
-      logseqVersionMd = true
-      // console.log("logseq version is 0.10.* or lower")
-      return true
-    } else logseqVersionMd = false
-  } else logseqVersion = "0.0.0"
-  return false
+// アプリ世代判定(バージョン解析・情報用のみ。グラフ種別の判定には使わない)
+const fetchAppInfo = async (): Promise<{ version: string; isDbEra: boolean }> => {
+  const info = (await logseq.App.getInfo()) as { version?: string } | null
+  const version = typeof info?.version === "string" ? info.version : "0.0.0"
+  // 0.11.0もしくは0.11.0-alpha+nightly.20250427のような形式なので、先頭の3つの数値を正規表現で取得する
+  const m = version.match(/(\d+)\.(\d+)\.(\d+)/)
+  // major>=2 (DB版) もしくは 0.11.x (移行期) なら新UI系のアプリ世代
+  const isDbEra = m ? (Number(m[1]) >= 2 || (Number(m[1]) === 0 && Number(m[2]) >= 11)) : false
+  return { version: m ? m[0] : version, isDbEra }
 }
-// DBグラフかどうかのチェック
-// DBグラフかどうかのチェック DBグラフだけtrue
+// DBグラフかどうかのチェック(公式APIでグラフ種別を判定)
 const checkLogseqDbGraph = async (): Promise<boolean> => {
-  const element = parent.document.querySelector(
-    "div.block-tags",
-  ) as HTMLDivElement | null // ページ内にClassタグが存在する  WARN:: ※DOM変更の可能性に注意
-  if (element) {
-    logseqDbGraph = true
-    return true
-  } else logseqDbGraph = false
-  return false
+  try {
+    const value = await (logseq.App as any).checkCurrentIsDbGraph()
+    return typeof value === "boolean" ? value : false
+  } catch {
+    return false // API非搭載のホスト(0.10.x以下) = DBグラフを開けない旧アプリ
+  }
 }
 
 const showDbGraphIncompatibilityMsg = () => {
   setTimeout(() => {
-    logseq.UI.showMsg("The ’DONE task property’ plugin not supports Logseq DB graph.", "warning", { timeout: 5000 })
+    logseq.UI.showMsg("The ’Draft Notes’ plugin does not support Logseq DB graphs.", "warning", { timeout: 5000 })
   }, 2000)
   clearEle(`${shortKey}--nav-header`)
   return

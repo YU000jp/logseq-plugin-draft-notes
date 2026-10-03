@@ -1,5 +1,5 @@
 import { BlockEntity } from '@logseq/libs/dist/LSPlugin.user'
-import { booleanLogseqVersionMd, keyAllDeleteButton, keyCloseButton, keyPageBarId, keyRunButton, keySettingsButton, keyToggleButton, keyToolbar, mainPageTitle, mainPageTitleLower, toolbarIcon } from '.'
+import { booleanAppDbEra, keyAllDeleteButton, keyCloseButton, keyPageBarId, keyRunButton, keySettingsButton, keyToggleButton, keyToolbar, mainPageTitle, mainPageTitleLower, toolbarIcon } from '.'
 import { generateEmbed } from './embed/generateBlock'
 import { t } from 'logseq-l10n'
 
@@ -76,7 +76,7 @@ export const AddToolbarAndMenuButton = () => {
       #${keyPageBarId} {
         display: none;
       }
-      ${booleanLogseqVersionMd() === true ? `
+      ${booleanAppDbEra() === false ? ` // アプリ世代が旧UI系なら従来のDOMセレクタを使う
       div.page:has([id="${t(mainPageTitleLower)}"]) #${keyPageBarId} {
         display: block
       }
