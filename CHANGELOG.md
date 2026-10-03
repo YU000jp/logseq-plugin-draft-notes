@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.3.0...v1.3.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* DBグラフ検出を公式APIに置き換え、アプリ世代とグラフ種別の判定を分離 ([9050efa](https://github.com/YU000jp/logseq-plugin-draft-notes/commit/9050efa9c01cdceb3b98c5deceed0aab75304f56))
+
 # [1.3.0](https://github.com/YU000jp/logseq-plugin-draft-notes/compare/v1.2.1...v1.3.0) (2025-06-08)
 
 
